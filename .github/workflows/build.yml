@@ -43,7 +43,7 @@ jobs:
         run: |
           mkdir -p dist/h8-500/data/languages
 
-          cat << EOF > dist/ghidra-h8-500/extension.properties
+          cat << EOF > dist/h8-500/extension.properties
           name=h8-500
           description=Hitachi H8/500 Processor for Ghidra
           author=c4ashley
