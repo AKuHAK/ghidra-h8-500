@@ -1,0 +1,59 @@
+name: Build H8-500 Processor
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+  workflow_dispatch: # Позволяет запускать сборку вручную
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ghidra-version: "12.0.4"
+            java-version: "21"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Java все равно нужна для работы Ghidra (компилятор Sleigh написан на Java)
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+
+      - name: Setup Ghidra
+        uses: antoniovazquezblanco/setup-ghidra@v2
+        with:
+          version: ${{ matrix.ghidra-version }}
+          auth_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Sleigh files via Make
+        run: |
+          make GHIDRADIR="$GHIDRA_INSTALL_PATH"
+
+      - name: Package Processor Module
+        run: |
+          mkdir -p dist/h8-500/data/languages
+
+          cp *.slaspec *.sla *.pspec *.cspec *.ldefs *.sinc dist/h8-500/data/languages/ 2>/dev/null || true
+
+          cp *.xml dist/h8-500/data/languages/ 2>/dev/null || true
+
+          cp README.md NOTES.TXT PATTERNS.TXT dist/h8-500/ 2>/dev/null || true
+
+          cd dist
+          zip -r h8-500-processor-${{ matrix.ghidra-version }}.zip h8-500/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ghidra-${{ matrix.ghidra-version }}-h8-500
+          path: dist/*.zip
