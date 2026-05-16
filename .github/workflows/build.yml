@@ -43,6 +43,14 @@ jobs:
         run: |
           mkdir -p dist/h8-500/data/languages
 
+          cat << EOF > dist/ghidra-h8-500/extension.properties
+          name=h8-500
+          description=Hitachi H8/500 Processor for Ghidra
+          author=c4ashley
+          createdOn=2024-01-23
+          version=${{ matrix.ghidra-version }}
+          EOF
+
           cp *.slaspec *.sla *.pspec *.cspec *.ldefs *.sinc dist/h8-500/data/languages/ 2>/dev/null || true
 
           cp *.xml dist/h8-500/data/languages/ 2>/dev/null || true
